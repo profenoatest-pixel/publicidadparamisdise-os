@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Xeneize - Boca Juniors</title>
+    <style>
+        /* ESTILOS (CSS) - DISEÑO AZUL Y ORO */
+        :root {
+            --boca-blue: #00338D;
+            --boca-yellow: #F2A900;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--boca-blue);
+            color: var(--white);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-image: linear-gradient(135deg, #002566 0%, #00338D 100%);
+        }
+
+        .container {
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 4px solid var(--boca-yellow);
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(242, 169, 0, 0.4);
+        }
+
+        h1 {
+            color: var(--boca-yellow);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        .score-board {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+
+        .question-box {
+            background-color: var(--white);
+            color: var(--boca-blue);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .btn-option {
+            background-color: var(--boca-yellow);
+            color: var(--boca-blue);
+            border: none;
+            padding: 15px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .btn-option:hover:not(:disabled) {
+            background-color: #ffd700;
+            transform: scale(1.02);
+        }
+
+        .btn-option:disabled {
+            cursor: no-drop;
+            opacity: 0.7;
+        }
+
+        .btn-option.correct {
+            background-color: #28a745; /* Verde */
+            color: white;
+        }
+
+        .btn-option.wrong {
+            background-color: #dc3545; /* Rojo */
+            color: white;
+        }
+
+        #next-btn {
+            margin-top: 20px;
+            background-color: var(--white);
+            color: var(--boca-blue);
+            border: 2px solid var(--boca-yellow);
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            display: none; /* Oculto al inicio */
+        }
+
+        #next-btn:hover {
+            background-color: var(--boca-yellow);
+        }
+
+        .result-screen {
+            display: none;
+        }
+        
+        .shield-decoration {
+            width: 60px;
+            margin: 0 auto 10px;
+            display: block;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Pantalla del Juego -->
+        <div id="quiz-screen">
+            <!-- Título decorativo tipo "escudo" simple con CSS -->
+            <div style="font-size: 30px; margin-bottom: 10px;">💙💛💙</div>
+            <h1>Quiz Xeneize</h1>
+            <div class="score-board">Puntos: <span id="score">0</span></div>
+
+            <div class="question-box" id="question-text">
+                Cargando pregunta...
+            </div>
+
+            <div class="options-grid" id="options-container">
+                <!-- Los botones se generan con JS -->
+            </div>
+
+            <button id="next-btn" onclick="nextQuestion()">Siguiente Pregunta</button>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="result-screen" class="result-screen">
+            <h1>¡Juego Terminado!</h1>
+            <p style="font-size: 1.5rem;">Tu puntaje final es:</p>
+            <h2 style="color: var(--boca-yellow); font-size: 3rem;"><span id="final-score">0</span>/10</h2>
+            <p id="final-message"></p>
+            <button class="btn-option" onclick="location.reload()" style="margin-top: 20px;">Jugar de nuevo</button>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN DE LA PUBLICIDAD
+        const AD_LINK = "https://www.effectivegatecpm.com/yx086kgevi?key=5e444f539fc901e738659e791373b144";
+
+        // BASE DE DATOS DE PREGUNTAS (10 Preguntas)
+        const questions = [
+            {
+                question: "¿En qué año se fundó el Club Atlético Boca Juniors?",
+                options: ["1901", "1905", "1910", "1899"],
+                answer: 1 // Índice de la respuesta correcta (1905)
+            },
+            {
+                question: "¿Cómo se llama popularmente al estadio de Boca?",
+                options: ["El Monumental", "El Cilindro", "La Bombonera", "El Palacio"],
+                answer: 2
+            },
+            {
+                question: "¿Quién es el máximo goleador histórico del club?",
+                options: ["Juan Román Riquelme", "Carlos Tevez", "Martín Palermo", "Diego Maradona"],
+                answer: 2
+            },
+            {
+                question: "¿A qué equipo venció Boca en la final de la Intercontinental del 2000?",
+                options: ["AC Milan", "Real Madrid", "Bayern Munich", "Liverpool"],
+                answer: 1
+            },
+            {
+                question: "¿Cuál es el apodo de los hinchas de Boca?",
+                options: ["Los Millonarios", "Los Diablos", "Los Xeneizes", "Los Canallas"],
+                answer: 2
+            },
+            {
+                question: "¿Qué técnico ganó más Copas Libertadores con Boca?",
+                options: ["Toto Lorenzo", "Carlos Bianchi", "Alfio Basile", "Miguel Ángel Russo"],
+                answer: 1
+            },
+            {
+                question: "¿De qué país era el barco que inspiró los colores de la camiseta?",
+                options: ["Suecia", "Noruega", "Finlandia", "Dinamarca"],
+                answer: 0
+            },
+            {
+                question: "¿En qué barrio de Buenos Aires se encuentra el club?",
+                options: ["San Telmo", "La Boca", "Barracas", "Palermo"],
+                answer: 1
+            },
+            {
+                question: "¿Cuántas Copas Libertadores tiene Boca hasta el año 2023?",
+                options: ["4", "5", "6", "7"],
+                answer: 2
+            },
+            {
+                question: "¿Quién es el actual presidente del club (2024)?",
+                options: ["Mauricio Macri", "Jorge Ameal", "Juan Román Riquelme", "Daniel Angelici"],
+                answer: 2
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        // ELEMENTOS DEL DOM
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const nextBtn = document.getElementById('next-btn');
+        const scoreSpan = document.getElementById('score');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const finalScoreSpan = document.getElementById('final-score');
+        const finalMessage = document.getElementById('final-message');
+
+        // INICIAR JUEGO
+        function loadQuestion() {
+            // Resetear estado
+            optionsContainer.innerHTML = '';
+            nextBtn.style.display = 'none';
+
+            if (currentQuestionIndex >= questions.length) {
+                showResults();
+                return;
+            }
+
+            const currentQ = questions[currentQuestionIndex];
+            questionText.textContent = currentQ.question;
+
+            currentQ.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('btn-option');
+                button.onclick = () => selectAnswer(index, currentQ.answer, button);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedIndex, correctIndex, button) {
+            // Deshabilitar todos los botones para que no elijan otra vez
+            const allButtons = optionsContainer.children;
+            for (let btn of allButtons) {
+                btn.disabled = true;
+            }
+
+            if (selectedIndex === correctIndex) {
+                score++;
+                scoreSpan.textContent = score;
+                button.classList.add('correct');
+            } else {
+                button.classList.add('wrong');
+                // Mostrar la correcta
+                allButtons[correctIndex].classList.add('correct');
+            }
+
+            nextBtn.style.display = 'inline-block';
+        }
+
+        function nextQuestion() {
+            // --- AQUI SE ABRE LA PUBLICIDAD ---
+            // Se usa window.open para abrir en nueva pestaña
+            window.open(AD_LINK, '_blank');
+            
+            // Avanzar pregunta
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showResults() {
+            quizScreen.style.display = 'none';
+            resultScreen.style.display = 'block';
+            finalScoreSpan.textContent = score;
+
+            if(score === 10) {
+                finalMessage.textContent = "¡INCREÍBLE! ¡Sos un verdadero Xeneize!";
+            } else if (score >= 7) {
+                finalMessage.textContent = "¡Muy bien! Sabés mucho de Boca.";
+            } else {
+                finalMessage.textContent = "Te falta repasar la historia. ¡Vamos Boca!";
+            }
+        }
+
+        // Cargar primera pregunta al inicio
+        loadQuestion();
+
+    </script>
+</body>
+</html>
